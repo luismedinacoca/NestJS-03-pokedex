@@ -239,6 +239,102 @@ async function bootstrap() {
 bootstrap();
 ```
 
+## Lecture 072: Docker - DockerCompose - MongoDB
+
+### 1. Create **`docker-compose.yaml`** file:
+```yaml
+
+version: '3'
+
+services:
+    db:
+      image: mongo:5
+      restart: always
+      ports:
+        - 27017:27017
+      environment:
+        MONGODB_DATABASE: nest-pokemon  
+      volumes:
+        - ./mongo:/data/db
+```
+
+### 1. Run docker-compose up:
+```bash
+docker-compose up -d
+```
+
+#### 1.1. Verify project structure:
+```
+03-pokedex/
+├── dist/
+├── mongo/                                // 👈🏽 ✅           
+│   ├── diagnostic.data/               
+│   ├── journal/               
+│   └── ...                  
+├── node_modules/
+├── public/              
+│   ├── css/               
+│   │   └── styless.css    
+│   └── index.html                  
+├── src/                     
+│   ├── pokemon/                                      
+|   │   ├── dto/                              
+|   |   │   ├── create-pokemon.dto.ts               
+|   |   │   └── update-pokemon.dto.ts 
+|   │   ├── entities/                         
+|   |   │   └── pokemon.entity.ts 
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+├── test/                     
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+├── .gitignore        
+├── .prettierrc  
+├── eslint.config.mjs      
+├── nest-cli.json  
+├── package-lock.json       
+├── package.json
+├── README.md
+├── tsconfig.build.json      
+└── tsconfig.json                       
+```
+
+#### 1.2. Verify docker-desktop:
+
+<img src="./img/section07-lecture072-001.png">
+
+### 2. Connect MongoDB with **`TablePlus`**:
+Click on **`Create connection`**
+<img src="./img/section07-lecture072-002.png">
+
+Chose **`Mongo`** then click on **`Create`** button.
+<img src="./img/section07-lecture072-003.png">
+
+Enter in URL:  **`mongodb://localhost:27017/nest-pokemon`** then click on **`Test`** button.
+<img src="./img/section07-lecture072-004.png">
+```yaml
+version: '3'
+services:
+    db:
+      image: mongo:5
+      restart: always
+      ports:
+        - 27017:27017*
+      environment:
+        MONGODB_DATABASE: nest-pokemon*  
+      volumes:
+        - ./mongo:/data/db
+```
+- Verify the URL must be green as prvious picture.
+- Verify **`03-pokedex`** database in docker desktop must be running.
+
+
+
+
+
 
 ## Lecture 0
 ## Lecture 0
