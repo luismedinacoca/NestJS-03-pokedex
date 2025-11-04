@@ -137,5 +137,108 @@ Go to any browser and enter to **`http://localhost:3000/`**
 
 
 
+## Lecture 071: Global Prefix
+
+### 1. create **`Pokemon`** resource:
+```bash
+nest g res pokemon --no-spec
+---
+✔ What transport layer do you use? REST API
+✔ Would you like to generate CRUD entry points? Yes
+CREATE src/pokemon/pokemon.controller.ts (946 bytes)
+CREATE src/pokemon/pokemon.module.ts (262 bytes)
+CREATE src/pokemon/pokemon.service.ts (649 bytes)
+CREATE src/pokemon/dto/create-pokemon.dto.ts (33 bytes)
+CREATE src/pokemon/dto/update-pokemon.dto.ts (181 bytes)
+CREATE src/pokemon/entities/pokemon.entity.ts (24 bytes)
+UPDATE package.json (2050 bytes)
+UPDATE src/app.module.ts (388 bytes)
+✔ Packages installed successfully.
+```
+
+### 2. Visual Project Structure:
+```
+03-pokedex/
+├── dist/
+├── node_modules/
+├── public/              
+│   ├── css/               
+│   │   └── styless.css    
+│   └── index.html                  
+├── src/                     
+│   ├── pokemon/                              // 👈🏽 ✅          
+|   │   ├── dto/                              // 👈🏽 ✅            
+|   |   │   ├── create-pokemon.dto.ts               
+|   |   │   └── update-pokemon.dto.ts 
+|   │   ├── entities/                         // 👈🏽 ✅              
+|   |   │   └── pokemon.entity.ts 
+|   │   ├── pokemon.module.ts                 // 👈🏽 ✅             
+|   │   ├── pokemon.controller.ts             // 👈🏽 ✅              
+|   │   └── pokemon.service.ts                // 👈🏽 ✅
+│   ├── app.module.ts
+│   └── main.ts 
+├── test/                     
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+├── .gitignore        
+├── .prettierrc  
+├── eslint.config.mjs      
+├── nest-cli.json  
+├── package-lock.json       
+├── package.json
+├── README.md
+├── tsconfig.build.json      
+└── tsconfig.json                       
+```
+
+### 3. Testing in POSTMAN:
+1. Open Postman
+2. Create a new Request
+3. Test:
+- GET http://localhost:3000
+- GET http://localhost:3000/pokemon
+- POST http://localhost:3000/pokemon
+- GET http://localhost:3000/pokemon/1
+
+In case we need to work with **`http://localhost:3000/api/pokemon`**
+
+### 4. Change the Global Prefix:
+Open **`main.ts`** file then add as follows:
+```ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');  // 👈🏽 ✅
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+```
+
+1. Test:
+- GET http://localhost:3000
+- GET http://localhost:3000/pokemon
+- POST http://localhost:3000/pokemon
+- GET http://localhost:3000/pokemon/1
+
+2. Test again:
+- GET http://localhost:3000
+- GET http://localhost:3000/api/pokemon
+- POST http://localhost:3000/api/pokemon
+- GET http://localhost:3000/api/pokemon/1
+
+
+```ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v2');  // 👈🏽 ✅
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+```
+
+
 ## Lecture 0
 ## Lecture 0
