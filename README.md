@@ -362,10 +362,59 @@ export class AppModule {}
 ```
 <img src="./img/section07-lecture074-001.png">
 
-In case the database from Docker desktop is down o close, run again:
+In case the database container from Docker desktop is down o close, run again:
 ```bash
 docker-compose up -d
 ```
+
+## 📚  Lecture 075: Create Schemas & Models
+
+### 1. Open **`pokemon.entity.ts`** file:
+```ts
+// ./src/pokemon/entities/pokemon.entity.ts
+import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+export class Pokemon extends Document {
+  @Prop({
+    unique: true,
+    index: true,
+  })
+  name: string;
+  @Prop({
+    unique: true,
+    index: true,
+  })
+  no: number;
+}
+export const PokemonSchema = SchemaFactory.createForClass(Pokemon);
+```
+
+### 2. Define our PokemonEntity in **`Pokemon.module.ts`** file:
+```ts
+// ./src/pokemon/pokemon.module.ts
+import { Module } from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { PokemonController } from './pokemon.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Pokemon, PokemonSchema } from './entities/pokemon.entity';
+@Module({
+  controllers: [PokemonController],
+  providers: [PokemonService],
+  imports: [
+    MongooseModule.forFeature([     // 👈🏽 ✅
+      {
+        name: Pokemon.name,         // 👈🏽 ✅
+        schema: PokemonSchema,      // 👈🏽 ✅
+      },
+    ]),
+  ],
+})
+export class PokemonModule {}
+```
+
+Go to TablePlus then update with `CMD/CTRL + R`
+<img src="./img/section07-lecture075-001.png">
+
 
 
 
