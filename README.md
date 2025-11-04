@@ -58,9 +58,9 @@ $ npm run test:cov
 ```
 
  
-# Section 07 - MongoDB - Pokedex
+# 👨🏾‍💻 Section 07 - MongoDB - Pokedex
 
-## Lecture 069: Starting Pokedex project
+## 📚  Lecture 069: Starting Pokedex project
 
 ```bash
 nest new 03-pokedex
@@ -82,7 +82,7 @@ nest new 03-pokedex
     ```
 
 
-## Lecture 070: Provide static content
+## 📚  Lecture 070: Provide static content
 
 ### 1.Add the following files:
 ```
@@ -137,7 +137,7 @@ Go to any browser and enter to **`http://localhost:3000/`**
 
 
 
-## Lecture 071: Global Prefix
+## 📚  Lecture 071: Global Prefix
 
 ### 1. create **`Pokemon`** resource:
 ```bash
@@ -239,7 +239,7 @@ async function bootstrap() {
 bootstrap();
 ```
 
-## Lecture 072: Docker - DockerCompose - MongoDB
+## 📚 Lecture 072: Docker - DockerCompose - MongoDB
 
 ### 1. Create **`docker-compose.yaml`** file:
 ```yaml
@@ -333,8 +333,41 @@ services:
 
 
 
+## 📚 Lecture 074: Connect Nest with MongoDB
+
+### 1. Integrate Nestjs with MongoDB:
+```bash
+npm install --save @nestjs/mongoose mongoose
+```
+
+### 2. Start the configuration with MongoDB from **`app.module.ts`** file:
+```ts
+import { join } from 'path';
+import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { PokemonModule } from './pokemon/pokemon.module';
+import { MongooseModule } from '@nestjs/mongoose';  // 👈🏽 ✅
+@Module({
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
+    MongooseModule.forRoot('mongodb://localhost:27017/nest-pokemon'),  // 👈🏽 ✅
+    PokemonModule,
+  ],
+  controllers: [],
+  providers: [],
+})
+export class AppModule {}
+```
+<img src="./img/section07-lecture074-001.png">
+
+In case the database from Docker desktop is down o close, run again:
+```bash
+docker-compose up -d
+```
 
 
 
-## Lecture 0
-## Lecture 0
+## 📚  Lecture 0
+## 📚  Lecture 0
