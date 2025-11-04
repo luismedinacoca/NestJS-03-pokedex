@@ -82,3 +82,60 @@ nest new 03-pokedex
     ```
 
 
+## Lecture 070: Provide static content
+
+### 1.Add the following files:
+```
+03-pokedex/
+├── dist/
+├── node_modules/
+├── public/                // 👈🏽 ✅
+│   ├── css/               // 👈🏽 ✅
+│   │   └── styless.css    // 👈🏽 ✅
+│   └── index.html                  
+├── src/                     
+│   ├── app.module.ts
+│   └── main.ts 
+├── test/                     
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+├── .gitignore        
+├── .prettierrc  
+├── eslint.config.mjs      
+├── nest-cli.json  
+├── package-lock.json       
+├── package.json
+├── README.md
+├── tsconfig.build.json      
+└── tsconfig.json                       
+```
+
+### 2. Install **`@nestjs/serve-static`** dependency:
+```bash
+npm i @nestjs/serve-static
+```
+
+### 3. Add the following code in **`app.module.ts`**:
+```ts
+// ./src/app.module.ts
+import { join } from 'path';    // 👈🏽 ✅
+import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';   // 👈🏽 ✅
+@Module({
+  imports: [
+    ServeStaticModule.forRoot({   // 👈🏽 ✅
+      rootPath: join(__dirname, '..', 'public'),    // 👈🏽 ✅
+    }),
+  ],
+  controllers: [],
+  providers: [],
+})
+export class AppModule {}
+```
+
+Go to any browser and enter to **`http://localhost:3000/`**
+
+
+
+## Lecture 0
+## Lecture 0
