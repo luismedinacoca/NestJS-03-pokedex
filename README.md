@@ -514,7 +514,47 @@ export class PokemonService {
 }
 ```
 
+Pending notice:
+- validate no more POST with same "no"
+- validate no more POST with same "name"
+- validate searching by "no" or "name".
 
+
+## 📚  Lecture 077: Create a Pokemon inside the Database
+
+### 1. Updating **`pokemon.service.ts`** file in **create** method:
+```ts
+import { Injectable } from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,  // 👈🏽 ✅
+  ) {}  // 👈🏽 ✅
+  create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
+    return createPokemonDto;
+  }
+  findAll() {
+    return `This action returns all pokemon`;
+  }
+  findOne(id: number) {
+    return `This action returns a #${id} pokemon`;
+  }
+  update(id: number, updatePokemonDto: UpdatePokemonDto) {
+    return `This action updates a #${id} pokemon`;
+  }
+  remove(id: number) {
+    return `This action removes a #${id} pokemon`;
+  }
+}
+```
 
 ## 📚  Lecture 0
 ## 📚  Lecture 0
