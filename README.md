@@ -416,6 +416,104 @@ Go to TablePlus then update with `CMD/CTRL + R`
 <img src="./img/section07-lecture075-001.png">
 
 
+## 📚  Lecture 076. POST - Receive and validate data
+
+### 1. open **`create-pokemon.dto.ts`** file:
+```ts
+/* ./src/pokemon/dto/create-pokemon.dto.ts */
+export class CreatePokemonDto {
+  // isInt, isPossitive, minLength(2)
+  no: number;
+  // isString, minLength(2)
+  name: string;
+}
+```
+
+
+### 2. Before, install **`class-validator`** and **`class-transforrmer`**
+```bash
+npm i class-validator class-transformer
+```
+
+### 3. Ad the Global validation in **`main.ts`** file:
+```ts
+/* ./src/main.ts */
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';  // 👈🏽 ✅
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v2');
+
+  app.useGlobalPipes(               // 👈🏽 ✅
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+```
+
+### 4. Add validation in **`create-pokemon.dto.ts`** file:
+```ts
+import { IsInt, IsPositive, IsString, Min, MinLength } from 'class-validator';
+export class CreatePokemonDto {
+  // isInt, isPossitive, minLength(2)
+  @IsInt()
+  @IsPositive()
+  @Min(1)
+  no: number;
+
+  // isString, minLength(2)
+  @IsString()
+  @MinLength(3)
+  name: string;
+}
+```
+
+Testing from POSTMAN:
+- Method: **POST**
+- URL: http://localhost:3000/api/v2/pokemon
+- Payload:
+  ```json
+  {
+    "no": 1, // testing with 0 or '1'
+    "name": "Bulasaur" // test options:  "name": "B" 
+  }
+  ```
+- Response:
+  ```text
+  'This action adds a new pokemon'
+  ```
+### 5. Modify the **`pokemon.service.ts`** in *create* method.
+```ts
+import { Injectable } from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+
+@Injectable()
+export class PokemonService {
+  create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();  // 👈🏽 ✅
+    return createPokemonDto;  // 👈🏽 ✅
+  }
+  findAll() {
+    return `This action returns all pokemon`;
+  }
+  findOne(id: number) {
+    return `This action returns a #${id} pokemon`;
+  }
+  update(id: number, updatePokemonDto: UpdatePokemonDto) {
+    return `This action updates a #${id} pokemon`;
+  }
+  remove(id: number) {
+    return `This action removes a #${id} pokemon`;
+  }
+}
+```
+
 
 
 ## 📚  Lecture 0
