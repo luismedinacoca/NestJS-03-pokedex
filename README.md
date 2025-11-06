@@ -825,6 +825,7 @@ export class PokemonController {
 ```
 
 ```ts
+//./src/pokemon/pokemon.service.ts
 import {
   BadRequestException,
   Injectable,
