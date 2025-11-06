@@ -69,8 +69,34 @@ export class PokemonService {
     return pokemon;
   }
 
-  update(id: number, updatePokemonDto: UpdatePokemonDto) {
-    return `This action updates a #${id} pokemon`;
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+    const pokemon = await this.findOne(term);
+
+    if (updatePokemonDto.name)
+      updatePokemonDto.name = updatePokemonDto.name.toLowerCase().trim();
+
+    // Option 1
+    /*
+    const updatedPokemon = await pokemon.updateOne(updatePokemonDto, { new: true });
+    return updatedPokemon;
+    Issues:
+    - updatedPokemon is updatedin MongoDb
+    - pokemon ddoes not reflext the updated values from Postman
+    */
+
+    // Option 2:
+    /*
+    await pokemon.updateOne(updatePokemonDto);
+    return { ...pokemon.toJSON(), ...updatePokemonDto };
+    */
+
+    // Option 3:
+    const updatedPokemon = await this.pokemonModel.findByIdAndUpdate(
+      pokemon._id,
+      updatePokemonDto,
+      { new: true }, // 👉 it returns an updated document
+    );
+    return updatedPokemon;
   }
 
   remove(id: number) {

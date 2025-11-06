@@ -777,7 +777,240 @@ export class PokemonService {
 ```
 
 
+## 📚  Lecture 080: Update Pokemon to database
+```ts
+// ./src/pokemon/pokemon.controller.ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  create(@Body() createPokemonDto: CreatePokemonDto) {
+    return this.pokemonService.create(createPokemonDto);
+  }
+  @Get()
+  findAll() {
+    return this.pokemonService.findAll();
+  }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.pokemonService.findOne(id);
+  }
+  @Patch(':term')  // 👈🏽 ✅
+  update(
+    @Param('term') term: string,
+    @Body() updatePokemonDto: UpdatePokemonDto,
+  ) {
+    return this.pokemonService.update(term, updatePokemonDto);
+  }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.pokemonService.remove(+id);
+  }
+}
+```
 
+```ts
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { isValidObjectId, Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+
+  async create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
+    try {
+      const pokemon = await this.pokemonModel.create(createPokemonDto);
+      return pokemon;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.code === 11000) {
+        throw new BadRequestException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          `Pokemon existe en DB: ${JSON.stringify(error.keyValue)}`,
+        );
+      }
+      console.log('❌ Error: ', error);
+      throw new InternalServerErrorException(
+        `Can't create Pokemon - Check server logs`,
+      );
+    }
+  }
+
+  findAll() {
+    return `This action returns all pokemon`;
+  }
+
+  async findOne(term: string) {
+    let pokemon: Pokemon | null | undefined;
+
+    // search by "no"
+    if (!isNaN(+term)) {
+      pokemon = await this.pokemonModel.findOne({ no: term });
+    }
+
+    // search by MongoID:
+    if (!pokemon && isValidObjectId(term)) {
+      pokemon = await this.pokemonModel.findById(term);
+    }
+
+    // search by name:
+    if (!pokemon) {
+      pokemon = await this.pokemonModel.findOne({
+        name: term.toLowerCase().trim(),
+      });
+    }
+
+    if (!pokemon)
+      throw new NotFoundException(
+        `Pokemon with id, name or no "${term}" not found`,
+      );
+
+    return pokemon;
+  }
+
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+    const pokemon = await this.findOne(term);
+
+    if (updatePokemonDto.name)
+      updatePokemonDto.name = updatePokemonDto.name.toLowerCase().trim();
+
+    // Option 1: ❌ 
+    /*
+    const updatedPokemon = await pokemon.updateOne(updatePokemonDto, { new: true });
+    return updatedPokemon;
+    */
+
+    // Option 2: ✅
+    /*
+    await pokemon.updateOne(updatePokemonDto);
+    return { ...pokemon.toJSON(), ...updatePokemonDto };
+    */
+
+    // Option 3: ✅
+    const updatedPokemon = await this.pokemonModel.findByIdAndUpdate(
+      pokemon._id,
+      updatePokemonDto,
+      { new: true }, // 👉 it returns an updated document
+    );
+    return updatedPokemon;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} pokemon`;
+  }
+}
+
+```
+### 🔍 General Context
+
+Your update method does this:
+```ts
+const pokemon = await this.findOne(term);
+const updatedPokemon = await pokemon.updateOne(updatePokemonDto, { new: true });
+return updatedPokemon;
+```
+
+But then you notice that:
+
+* ✅ In MongoDB, the document does get updated
+* 🚫 But the pokemon object (and the Postman response) does not reflect the changes
+
+---
+
+### ⚙️ 1. How updateOne() Works in Mongoose
+🔸 `pokemon.updateOne(updatePokemonDto)`
+
+This method:
+* Updates the document **directly in the database**, without modifying the in-memory instance.
+* **Does not return** the updated document.
+* Only returns an **operation result**, for example:
+
+```json
+{
+  "acknowledged": true,
+  "modifiedCount": 1,
+  "matchedCount": 1
+}
+```
+
+
+Therefore, even though `updatedPokemon` contains this MongoDB operation result,
+it does not include the updated document, nor does it modify `pokemon` in memory.
+
+> ⚠️ The option` new: true` has no effect here because `updateOne()` does not support it.
+That option only works with `findOneAndUpdate()` or `findByIdAndUpdate()`.
+
+
+### ⚙️ 2. Why the Other Options Do Reflect the Change
+
+✅ **Option 2**
+```ts
+await pokemon.updateOne(updatePokemonDto);
+return { ...pokemon.toJSON(), ...updatePokemonDto };
+```
+
+Here, you manually combine the original document with the updated data:
+* `pokemon.toJSON()` converts the Mongoose document into a plain JavaScript object.
+* `...updatePokemonDto` overwrites the updated fields.
+
+So, the object you return to Postman **simulates** the updated document state,
+even though the in-memory `pokemon` object has not actually changed.
+
+---
+
+✅ **Option 3**
+```ts
+const updatedPokemon = await this.pokemonModel.findByIdAndUpdate(
+  pokemon._id,
+  updatePokemonDto,
+  { new: true },
+);
+return updatedPokemon;
+```
+
+`findByIdAndUpdate()` does support `new: true`,
+and it returns the **updated document** directly from MongoDB.
+
+That’s why the object received in Postman **already contains the updated values**.
+
+---
+
+### 🧩 Comparison of Update Methods in Mongoose
+
+| Method | Updates in MongoDB? | Updates the in-memory object? | Returns the updated document? | Does `new: true` work? |
+|:--------|:--------------------:|:------------------------------:|:------------------------------:|:-----------------------:|
+| `pokemon.updateOne()` | ✅ Yes | ❌ No | ❌ No (returns the operation result) | ❌ No |
+| `findByIdAndUpdate()` | ✅ Yes | – | ✅ Yes (if using `{ new: true }`) | ✅ Yes |
+| `findOneAndUpdate()` | ✅ Yes | – | ✅ Yes (if using `{ new: true }`) | ✅ Yes |
+| `return { ...pokemon.toJSON(), ...updatePokemonDto }` | ✅ Yes | ❌ No | ⚙️ Manually simulated (in memory) | ⚙️ N/A |
 
 
 
