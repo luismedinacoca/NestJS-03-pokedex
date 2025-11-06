@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -25,7 +29,10 @@ export class PokemonService {
           `Pokemon existe en DB: ${JSON.stringify(error.keyValue)}`,
         );
       }
-      throw error;
+      console.log('❌ Error: ', error);
+      throw new InternalServerErrorException(
+        `Can't create Pokemon - Check server logs`,
+      );
     }
   }
 

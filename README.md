@@ -374,6 +374,7 @@ docker-compose up -d
 // ./src/pokemon/entities/pokemon.entity.ts
 import { Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+@Schema()
 export class Pokemon extends Document {
   @Prop({
     unique: true,
@@ -555,6 +556,153 @@ export class PokemonService {
   }
 }
 ```
+
+Updated:
+```ts
+// ./src/pokemon/pokemon.service.ts
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+
+  async create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
+    try {
+      const pokemon = await this.pokemonModel.create(createPokemonDto);
+      return pokemon;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.code === 11000) {
+        throw new BadRequestException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          `Pokemon existe en DB: ${JSON.stringify(error.keyValue)}`,
+        );
+      }
+      throw error;
+    }
+  }
+  findAll() {
+    return `This action returns all pokemon`;
+  }
+  findOne(id: number) {
+    return `This action returns a #${id} pokemon`;
+  }
+  update(id: number, updatePokemonDto: UpdatePokemonDto) {
+    return `This action updates a #${id} pokemon`;
+  }
+  remove(id: number) {
+    return `This action removes a #${id} pokemon`;
+  }
+}
+```
+
+## 📚  Lecture 078: Respond a specific error
+
+```ts
+//./src/pokemon/pokemon.service.ts
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+  async create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
+    try {
+      const pokemon = await this.pokemonModel.create(createPokemonDto);
+      return pokemon;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.code === 11000) {
+        throw new BadRequestException(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          `Pokemon existe en DB: ${JSON.stringify(error.keyValue)}`,
+        );
+      }
+      console.log('❌ Error: ', error);
+      throw new InternalServerErrorException(
+        `Can't create Pokemon - Check server logs`,
+      );
+    }
+  }
+  findAll() {
+    return `This action returns all pokemon`;
+  }
+  findOne(id: number) {
+    return `This action returns a #${id} pokemon`;
+  }
+  update(id: number, updatePokemonDto: UpdatePokemonDto) {
+    return `This action updates a #${id} pokemon`;
+  }
+  remove(id: number) {
+    return `This action removes a #${id} pokemon`;
+  }
+}
+```
+
+### 1. Add HttpCode decorator:
+```ts
+// ./src/pokemon/pokemon.controller.ts 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  create(@Body() createPokemonDto: CreatePokemonDto) {
+    return this.pokemonService.create(createPokemonDto);
+  }
+  @Get()
+  findAll() {
+    return this.pokemonService.findAll();
+  }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.pokemonService.findOne(+id);
+  }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updatePokemonDto: UpdatePokemonDto) {
+    return this.pokemonService.update(+id, updatePokemonDto);
+  }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.pokemonService.remove(+id);
+  }
+}
+```
+
+
 
 ## 📚  Lecture 0
 ## 📚  Lecture 0
