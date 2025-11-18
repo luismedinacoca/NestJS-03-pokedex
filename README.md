@@ -1134,5 +1134,28 @@ export class PokemonService {
 }
 ``` 
 
+## 📚  Lecture 082: Delete a Pokemon
+
+### 1. Update **`pokemon.controller.ts`**:
+```tsx
+@Delete(':id')
+remove(@Param('id') id: string) {
+  return this.pokemonService.remove(id);  // 👈🏽 ✅
+}
+```
+
+### 2. Updat **`pokemon.service.ts`**:
+```tsx
+async remove(term: string) {
+  const pokemon = await this.findOne(term);  // term: _id / no / name
+  await pokemon.deleteOne();
+  return `This action removes a #${term} pokemon`;
+}
+```
+
+> Need to delete by "**`_id`**" only (mongo ID).
+
+
+
 ## 📚  Lecture 0
 ## 📚  Lecture 0
