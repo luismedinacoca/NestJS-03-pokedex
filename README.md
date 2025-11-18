@@ -1332,7 +1332,7 @@ Make a request by `_id_`:
   async remove(id: string) {
     //const pokemon = await this.findOne(id);
     //await pokemon.deleteOne();
-    const result = this.pokemonModel.findByIdAndDelete(id);
+    const result = await this.pokemonModel.findByIdAndDelete(id);
     return result;
   }
 ```
@@ -1340,8 +1340,52 @@ Make a request by `_id_`:
 Issues:
 - delete as espected.
 <img src="./img/section07-lecture083-005.png">
-- second time you make a delete request with the same _id and it returns `200`. 💥
+- second time you make a delete request with the same `_id` and it returns `200`. 💥
 <img src="./img/section07-lecture083-006.png">
+
+
+## 📚  Lecture 084: Validate and delete in one single request
+
+### 1. New Update **`pokemon.service.ts`**:
+```ts
+  async remove(id: string) {
+    //const pokemon = await this.findOne(id);
+    //await pokemon.deleteOne();
+    //const result = await this.pokemonModel.findByIdAndDelete(id);
+    const result = await this.pokemonModel.deleteOne({ _id: id})
+    return result;
+  }
+```
+
+Outcome:
+<img src="./img/section07-lecture084-001.png">
+
+### 2. Destructuring the **`deleteOne`** result:
+```ts
+
+  async remove(id: string) {
+    const { deletedCount } = await this.pokemonModel.deleteOne({ _id: id });
+    if (deletedCount === 0) {
+      throw new BadRequestException(`Pokemon with "_id: ${id}" not found`);
+    }
+    return {
+      message: `Pokemon with "_id: ${id}" deleted successfully`,
+      deleted: true,
+    };
+  }
+```
+
+1. Update the database:
+<img src="./img/section07-lecture084-002.png">
+
+2. Delete the first pokemon:
+<img src="./img/section07-lecture084-003.png">
+
+3. Try again:
+<img src="./img/section07-lecture084-004.png">
+
+
+
 
 
 
