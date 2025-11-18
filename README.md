@@ -1136,7 +1136,7 @@ export class PokemonService {
 
 ## 📚  Lecture 082: Delete a Pokemon
 
-### 1. Update **`pokemon.controller.ts`**:
+### 1. Update **`pokemon.controller.tsx`**:
 ```tsx
 @Delete(':id')
 remove(@Param('id') id: string) {
@@ -1144,7 +1144,7 @@ remove(@Param('id') id: string) {
 }
 ```
 
-### 2. Updat **`pokemon.service.ts`**:
+### 2. Updat **`pokemon.service.tsx`**:
 ```tsx
 async remove(term: string) {
   const pokemon = await this.findOne(term);  // term: _id / no / name
@@ -1155,7 +1155,195 @@ async remove(term: string) {
 
 > Need to delete by "**`_id`**" only (mongo ID).
 
+## 📚  Lecture 083: CustomPipes - ParseMongoIdPipe
+
+### 1. comment the previous code from **`pokemon.service.tsx`**:
+```tsx
+async remove(term: string) {
+  //const pokemon = await this.findOne(term);  // term: _id / no / name
+  //await pokemon.deleteOne();
+  return `This action removes a #${term} pokemon`;
+}
+```
+
+### 2. Install **`common.module.tsx`**:
+```bash
+nest g mo common
+```
+Outcome:
+```bash
+CREATE src/common/common.module.ts (83 bytes)
+UPDATE src/app.module.ts (582 bytes)
+```
+
+### 3. Some updating:
+```tsx
+import { join } from 'path';
+import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { PokemonModule } from './pokemon/pokemon.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { CommonModule } from './common/common.module';  // 👈🏽 ✅
+
+@Module({
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
+    MongooseModule.forRoot('mongodb://localhost:27017/nest-pokemon'),
+    PokemonModule,
+    CommonModule,  // 👈🏽 ✅
+  ],
+  controllers: [],
+  providers: [],
+})
+export class AppModule {}
+```
+
+### 4. Create new `pipe` inside **`common/pipes`** folder:
+```bash
+nest g pi common/pipes/parseMongoId --no-spec
+```
+
+Outcome:
+```bash
+CREATE src/common/pipes/parse-mongo-id/parse-mongo-id.pipe.ts (228 bytes)
+```
+
+### 5. **`common.module.ts`**:
+```tsx
+/* ./src/common/common.module.ts */
+import { Module } from '@nestjs/common';
+@Module({})
+export class CommonModule {}
+```
+
+### 6. **`parse-mongo-id.pipe.ts`**:
+```tsx
+/* ./src/common/pipes/parse-mongo-id.pipe.ts */
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+@Injectable()
+export class ParseMongoIdPipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    console.log(value, metadata);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return value;
+  }
+}
+```
+
+### 7. Import **`parse-mongo-id.pipe.ts`** in **`pokemon.controller.ts`**:
+```tsx
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';  // 👈🏽 ✅
+
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  create(@Body() createPokemonDto: CreatePokemonDto) {
+    return this.pokemonService.create(createPokemonDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.pokemonService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.pokemonService.findOne(id);
+  }
+
+  @Patch(':term')
+  update(
+    @Param('term') term: string,
+    @Body() updatePokemonDto: UpdatePokemonDto,
+  ) {
+    return this.pokemonService.update(term, updatePokemonDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseMongoIdPipe) id: string) {  // 👈🏽 ✅
+    return this.pokemonService.remove(id);
+  }
+}
+```
+
+### 8. Send **`DELETE`** request then see what is displayed in terminal/server:
+
+- Method: `DELETE`
+- URL: http://localhost:3000/api/v2/pokemon/bulbasaur
+- Response: 
+  ```text
+  This action removes a #bulbasaur pokemon
+  ```
+<img src="./img/section07-lecture083-001.png">
 
 
-## 📚  Lecture 0
-## 📚  Lecture 0
+### 9. ADd some validation:
+```tsx
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  Injectable,
+  PipeTransform,
+} from '@nestjs/common';
+import { isValidObjectId } from 'mongoose';
+@Injectable()
+export class ParseMongoIdPipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    //console.log(value, metadata);
+    if (!isValidObjectId(value))  // 👈🏽 ✅
+      throw new BadRequestException(`${value} is not a valid MongoID`);  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return value;
+  }
+}
+```
+
+Make a request by `name`:
+<img src="./img/section07-lecture083-002.png">
+
+Make a request by `no`:
+<img src="./img/section07-lecture083-003.png">
+
+Make a request by `_id_`:
+<img src="./img/section07-lecture083-004.png">
+
+
+### 10. Update **`pokemon.service.ts`**:
+```ts
+  async remove(id: string) {
+    //const pokemon = await this.findOne(id);
+    //await pokemon.deleteOne();
+    const result = this.pokemonModel.findByIdAndDelete(id);
+    return result;
+  }
+```
+
+Issues:
+- delete as espected.
+<img src="./img/section07-lecture083-005.png">
+- second time you make a delete request with the same _id and it returns `200`. 💥
+<img src="./img/section07-lecture083-006.png">
+
+
+
+## 📚  Lecture 0    
+## 📚  Lecture 0    
