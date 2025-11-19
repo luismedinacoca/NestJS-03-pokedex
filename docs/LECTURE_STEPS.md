@@ -1384,10 +1384,5 @@ Outcome:
 3. Try again:
 <img src="./img/section07-lecture084-004.png">
 
-
-
-
-
-
 ## 📚  Lecture 0    
 ## 📚  Lecture 0    
