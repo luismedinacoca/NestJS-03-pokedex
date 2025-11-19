@@ -1465,6 +1465,97 @@ export class SeedController {
   ```
 
 
+## 📚  Lecture 092: Make a HTTP request from Nest
+
+### Goals:
+1. Go to https://pokeapi.co/
+2. Request for https://pokeapi.co/api/v2/pokemon?limit=650
+3. Use those data in order to populate the database in pokemon.service.create()
+
+
+### 2. Go to **`seed.service.ts`** file:
+Mandatory having node version v18+
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+
+@Injectable()
+export class SeedService {
+  async executeSeed() {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.results;  // No data type response! 💥 😪
+  }
+}
+```
+
+### 3. Create an interface in order to validate dta type response:
+```ts
+/* src/seed/interfaces/poke-response.interface.ts */
+export interface PokeResponse {
+  count:    number;
+  next:     string;
+  previous: null;
+  results:  Result[];
+}
+
+export interface Result {
+  name: string;
+  url:  string;
+}
+```
+
+### 4. Update the **`seed.service.tss`** with the interface:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+
+@Injectable()
+export class SeedService {
+  async executeSeed(): Promise<Result[]> {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=650");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+    return data.results; // It suggest "results" with some specific data type.
+  }
+}
+```
+
+### 5. Get the **`no`** from **`url`**:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+
+@Injectable()
+export class SeedService {
+  async executeSeed(): Promise<Result[]> {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+    
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+      //console.log(segments); // [ 'https:', '', 'pokeapi.co', 'api', 'v2', 'pokemon', '1', '' ]
+
+      const no: number = +segments[ segments.length - 2]; // str -> number
+      console.log({name, no}); //{ name: 'bulbasaur', no: 1 }
+    });
+    return data.results;
+  }
+}
+```
+
+
 
 ## 📚  Lecture 0    
 ## 📚  Lecture 0    
