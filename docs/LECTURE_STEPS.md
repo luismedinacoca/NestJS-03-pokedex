@@ -1384,6 +1384,87 @@ Outcome:
 3. Try again:
 <img src="./img/section07-lecture084-004.png">
 
-## 📚  Lecture 0    
+
+# 👨🏾‍💻 Section 08: Seed & Pagination
+
+## 📚  Lecture 090: Create a SEED module
+
+### 1. Execute the following command:
+```ts
+nest g res seed --no-spec
+---
+✔ What transport layer do you use? REST API
+✔ Would you like to generate CRUD entry points? Yes
+---
+CREATE src/seed/seed.controller.ts (883 bytes)
+CREATE src/seed/seed.module.ts (241 bytes)
+CREATE src/seed/seed.service.ts (607 bytes)
+CREATE src/seed/dto/create-seed.dto.ts (30 bytes)
+CREATE src/seed/dto/update-seed.dto.ts (169 bytes)
+CREATE src/seed/entities/seed.entity.ts (21 bytes)
+UPDATE src/app.module.ts (647 bytes)
+```
+
+### 2. Delete folder & File no needed (❌):
+```
+03-pokedex/
+├── dist/
+├── mongo/        
+...                 
+├── src/                     
+│   ├── pokemon/                                      
+│   ├── seed/                                      
+|   │   ├── dto/                      ❌                            
+|   |   │   ├── create-seed.dto.ts    ❌           
+|   |   │   └── update-seed.dto.ts    ❌
+|   │   ├── entities/                 ❌        
+|   |   │   └── seed.entity.ts        ❌
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+```
+
+### 3. Update or modify **`seed.service.ts`** file:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class SeedService {
+  executeSeed() {
+    return 'This action will execute the seed';
+  }
+}
+```
+
+### 4. Update or modify **`seed.controller.ts`** file:
+```ts
+/* src/seed/seed.controller.ts */
+import { Controller, Get } from '@nestjs/common';
+import { SeedService } from './seed.service';
+
+@Controller('seed')
+export class SeedController {
+  constructor(private readonly seedService: SeedService) {}
+
+  @Get()
+  findAll() {
+    return this.seedService.executeSeed();
+  }
+}
+```
+
+#### Test from Postman:
+- method: **`GET`**
+- URL: http://localhost:3000/api/v2/seed
+- response: 
+  ```text
+  This action will execute the seed
+  ```
+
+
+
 ## 📚  Lecture 0    
 ## 📚  Lecture 0    
