@@ -1555,7 +1555,235 @@ export class SeedService {
 }
 ```
 
+## 📚  Lecture 094: Solution – Insert Pokemon in batches
+
+### 1. Make an injection from **`pokemon.service.ts`** to **`seed.service.ts`**:
+From:
+```ts
+/* src/pokemon/pokemon.service.ts */
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)  // 👈🏽 ✅
+    private readonly pokemonModel: Model<Pokemon>,  // 👈🏽 ✅
+  ) {}
+  ...
+}
+```
+
+To:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+import { InjectModel } from '@nestjs/mongoose';  // 👈🏽 ✅
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';  // 👈🏽 ✅
+import { Model } from 'mongoose';  // 👈🏽 ✅
+
+@Injectable()
+export class SeedService {
+
+  constructor(
+    @InjectModel(Pokemon.name)  // 👈🏽 ✅
+    private readonly pokemonModel: Model<Pokemon>,  // 👈🏽 ✅
+  ) { }
+
+  async executeSeed(): Promise<Result[]> {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=10");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+
+      const no: number = +segments[segments.length - 2]; 
+      console.log({ name, no }); 
+    });
+    return data.results;
+  }
+}
+```
+
+Outcome:
+```bash
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [InstanceLoader] AppModule dependencies initialized +17ms
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [InstanceLoader] MongooseModule dependencies initialized +0ms
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [InstanceLoader] CommonModule dependencies initialized +0ms
+[Nest] 26603  - 11/20/2025, 3:12:01 PM   ERROR [ExceptionHandler] UnknownDependenciesException [Error]: Nest can't resolve dependencies of the SeedService (?). Please make sure that the argument "PokemonModel" at index [0] is available in the SeedModule context.
+
+Potential solutions:
+- Is SeedModule a valid NestJS module?
+- If "PokemonModel" is a provider, is it part of the current SeedModule?
+- If "PokemonModel" is exported from a separate @Module, is that module imported within SeedModule?
+```
+
+### 2. Fixing the previous issue:
+Go to **`pokemon.module`** file then export **`MongooseModule`**:
+```ts
+/* src/pokemon/pokemon.module.ts */
+import { Module } from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { PokemonController } from './pokemon.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Pokemon, PokemonSchema } from './entities/pokemon.entity';
+
+@Module({
+  controllers: [PokemonController],
+  providers: [PokemonService],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: Pokemon.name,
+        schema: PokemonSchema,
+      },
+    ]),
+  ],
+  exports: [
+    MongooseModule,  // 👈🏽 ✅
+  ]
+})
+export class PokemonModule { }
+```
+
+Open **`seed.module.ts`** file then import **`PokemonModule`**
+```ts
+/* src/seed/seed.module.ts */
+import { Module } from '@nestjs/common';
+import { SeedService } from './seed.service';
+import { SeedController } from './seed.controller';
+import { PokemonModule } from 'src/pokemon/pokemon.module';  // 👈🏽 ✅
+
+@Module({
+  controllers: [SeedController],
+  providers: [SeedService],
+  imports: [PokemonModule],  // 👈🏽 ✅
+})
+export class SeedModule {}
+```
+
+> Note:
+
+### 📦 Module Explanation
+
+#### 1. In `pokemon.module.ts` 📁, the `MongooseModule` 🍃 is exported.
+
+**Why?** To make the model configuration (in this case, the `Pokemon` model defined in `forFeature`) accessible from other external modules.
+
+#### 2. In `seed.module.ts` 📂, the `PokemonModule` is imported.
+
+**What for?** This allows `seed.service.ts` 🛠️ to inject the model:
+
+```typescript
+@InjectModel(Pokemon.name)
+private readonly pokemonModel: Model<Pokemon>
+```
+
+---
+
+Outcome from terminal:
+```bash
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] AppModule dependencies initialized +17ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] MongooseModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] CommonModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] ServeStaticModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] MongooseCoreModule dependencies initialized +14ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] MongooseModule dependencies initialized +0ms
+# [Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] SeedModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] PokemonModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RoutesResolver] PokemonController {/api/v2/pokemon}: +2ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon, POST} route +1ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon, GET} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon/:id, GET} route +1ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon/:term, PATCH} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon/:id, DELETE} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RoutesResolver] SeedController {/api/v2/seed}: +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/seed, GET} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [NestApplication] Nest application successfully started +2ms
+```
+
+### 3. Let's populate the database:
+
+#### 1. **`Fetch`** version
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';
+import { Model } from 'mongoose';
+@Injectable()
+export class SeedService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) { }
+  async executeSeed(): Promise<Result[]> {
+    // 1. FETCH request:
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=15");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+    // 2. Map data:  👈🏽 ✅
+    const pokemonToInsert = data.results.map(({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      return { name, no };
+    });
+    // 3. Insert into DB:  👈🏽 ✅
+    await this.pokemonModel.insertMany(pokemonToInsert);
+    return data.results;
+  }
+}
+```
+
+#### 2. **`Axios`** version:
+```ts
+/* src/seed/seed.service.ts */
+import {Injectable} from '@nestjs/common'; 
+import axios, { AxiosInsstance } from 'axios'; 
+import { PokeResponse } from './interfaces/poke-response.interface';
+
+@Injectable() 
+export class SeedService{ 
+  private reaadonly axios: AxiosInstance = axios; 
+  async executeSeed() { 
+    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=1`); 
+    data.results.forEach( async({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      const pokemon = await this.pokemonModel.create({ name, no });  // 👈🏽 ✅
+    })
+    return data.results; 
+  } 
+}
+```
+
+Outcome:
+
+<img src="../img/section08-lecture094-001.png">
+
+
+
+
+
+
 
 
 ## 📚  Lecture 0    
+```ts
+/*  */
+
+```
+
+
 ## 📚  Lecture 0    
+```ts
+/*  */
+
+```
+
