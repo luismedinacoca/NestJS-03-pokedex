@@ -278,14 +278,14 @@ docker-compose up -d
 │   └── index.html                  
 ├── src/                     
 │   ├── pokemon/                                      
-|   │   ├── dto/                              
-|   |   │   ├── create-pokemon.dto.ts               
-|   |   │   └── update-pokemon.dto.ts 
-|   │   ├── entities/                         
-|   |   │   └── pokemon.entity.ts 
-|   │   ├── pokemon.module.ts                 
-|   │   ├── pokemon.controller.ts             
-|   │   └── pokemon.service.ts                
+│   │   ├── dto/                              
+│   │   │   ├── create-pokemon.dto.ts               
+│   │   │   └── update-pokemon.dto.ts 
+│   │   ├── entities/                         
+│   │   │   └── pokemon.entity.ts 
+│   │   ├── pokemon.module.ts                 
+│   │   ├── pokemon.controller.ts             
+│   │   └── pokemon.service.ts                
 │   ├── app.module.ts
 │   └── main.ts 
 ├── test/                     
@@ -304,17 +304,17 @@ docker-compose up -d
 
 #### 1.2. Verify docker-desktop:
 
-<img src="./img/section07-lecture072-001.png">
+<img src="../img/section07-lecture072-001.png">
 
 ### 2. Connect MongoDB with **`TablePlus`**:
 Click on **`Create connection`**
-<img src="./img/section07-lecture072-002.png">
+<img src="../img/section07-lecture072-002.png">
 
 Chose **`Mongo`** then click on **`Create`** button.
-<img src="./img/section07-lecture072-003.png">
+<img src="../img/section07-lecture072-003.png">
 
 Enter in URL:  **`mongodb://localhost:27017/nest-pokemon`** then click on **`Test`** button.
-<img src="./img/section07-lecture072-004.png">
+<img src="../img/section07-lecture072-004.png">
 ```yaml
 version: '3'
 services:
@@ -360,7 +360,7 @@ import { MongooseModule } from '@nestjs/mongoose';  // 👈🏽 ✅
 })
 export class AppModule {}
 ```
-<img src="./img/section07-lecture074-001.png">
+<img src="../img/section07-lecture074-001.png">
 
 In case the database container from Docker desktop is down o close, run again:
 ```bash
@@ -414,7 +414,7 @@ export class PokemonModule {}
 ```
 
 Go to TablePlus then update with `CMD/CTRL + R`
-<img src="./img/section07-lecture075-001.png">
+<img src="../img/section07-lecture075-001.png">
 
 
 ## 📚  Lecture 076. POST - Receive and validate data
@@ -1293,7 +1293,7 @@ export class PokemonController {
   ```text
   This action removes a #bulbasaur pokemon
   ```
-<img src="./img/section07-lecture083-001.png">
+<img src="../img/section07-lecture083-001.png">
 
 
 ### 9. ADd some validation:
@@ -1318,13 +1318,13 @@ export class ParseMongoIdPipe implements PipeTransform {
 ```
 
 Make a request by `name`:
-<img src="./img/section07-lecture083-002.png">
+<img src="../img/section07-lecture083-002.png">
 
 Make a request by `no`:
-<img src="./img/section07-lecture083-003.png">
+<img src="../img/section07-lecture083-003.png">
 
 Make a request by `_id_`:
-<img src="./img/section07-lecture083-004.png">
+<img src="../img/section07-lecture083-004.png">
 
 
 ### 10. Update **`pokemon.service.ts`**:
@@ -1339,9 +1339,9 @@ Make a request by `_id_`:
 
 Issues:
 - delete as espected.
-<img src="./img/section07-lecture083-005.png">
+<img src="../img/section07-lecture083-005.png">
 - second time you make a delete request with the same `_id` and it returns `200`. 💥
-<img src="../img/section07-lecture083-006.png">
+<img src=".../img/section07-lecture083-006.png">
 
 
 ## 📚  Lecture 084: Validate and delete in one single request
@@ -1358,7 +1358,7 @@ Issues:
 ```
 
 Outcome:
-<img src="./img/section07-lecture084-001.png">
+<img src="../img/section07-lecture084-001.png">
 
 ### 2. Destructuring the **`deleteOne`** result:
 ```ts
@@ -1376,13 +1376,13 @@ Outcome:
 ```
 
 1. Update the database:
-<img src="./img/section07-lecture084-002.png">
+<img src="../img/section07-lecture084-002.png">
 
 2. Delete the first pokemon:
-<img src="./img/section07-lecture084-003.png">
+<img src="../img/section07-lecture084-003.png">
 
 3. Try again:
-<img src="./img/section07-lecture084-004.png">
+<img src="../img/section07-lecture084-004.png">
 
 
 # 👨🏾‍💻 Section 08: Seed & Pagination
