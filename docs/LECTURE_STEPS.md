@@ -1768,7 +1768,104 @@ Outcome:
 <img src="../img/section08-lecture094-001.png">
 
 
+## 📚  Lecture 095: Insert multiple records simultaneously
 
+Read the following files:
+- docs/section08-lecture095-seed_comparison.md
+- docs/section08-lecture095-no-wait-in-map.md
+
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';
+
+@Injectable()
+export class SeedService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+
+  async executeSeed(): Promise<Result[]> {
+    // 1. Fetch request
+    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10');
+    if (!response.ok) {
+      throw new Error(`Request error: ${response.status}`);
+    }
+
+    const data: PokeResponse = await response.json();
+
+    // 2. Build batch data
+    const pokemonToInsert = data.results.map(({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      return { name, no };
+    });
+
+    // 3. Batch insert for maximum efficiency
+    await this.pokemonModel.insertMany(pokemonToInsert);
+
+    return data.results;
+  }
+}
+```
+
+### Run **`seed`** from POSTMAN:
+1. Method: **`GET`**
+2. URL: **`http://localhost:3000/api/v2/seed`**
+3. Expected Result:
+    ```json
+    [
+        {
+            "name": "bulbasaur",
+            "url": "https://pokeapi.co/api/v2/pokemon/1/"
+        },
+        {
+            "name": "ivysaur",
+            "url": "https://pokeapi.co/api/v2/pokemon/2/"
+        },
+        {
+            "name": "venusaur",
+            "url": "https://pokeapi.co/api/v2/pokemon/3/"
+        },
+        {
+            "name": "charmander",
+            "url": "https://pokeapi.co/api/v2/pokemon/4/"
+        },
+        {
+            "name": "charmeleon",
+            "url": "https://pokeapi.co/api/v2/pokemon/5/"
+        },
+        {
+            "name": "charizard",
+            "url": "https://pokeapi.co/api/v2/pokemon/6/"
+        },
+        {
+            "name": "squirtle",
+            "url": "https://pokeapi.co/api/v2/pokemon/7/"
+        },
+        {
+            "name": "wartortle",
+            "url": "https://pokeapi.co/api/v2/pokemon/8/"
+        },
+        {
+            "name": "blastoise",
+            "url": "https://pokeapi.co/api/v2/pokemon/9/"
+        },
+        {
+            "name": "caterpie",
+            "url": "https://pokeapi.co/api/v2/pokemon/10/"
+        }
+    ]
+    ```
+
+### 🔥 Run from terminal:
+```bash
+docker run -dp 27017:27017 mongo
+```
 
 
 
@@ -1780,6 +1877,11 @@ Outcome:
 
 ```
 
+## 📚  Lecture 0    
+```ts
+/*  */
+
+```
 
 ## 📚  Lecture 0    
 ```ts

@@ -6,30 +6,32 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class SeedService {
-
   constructor(
     @InjectModel(Pokemon.name)
     private readonly pokemonModel: Model<Pokemon>,
-  ) { }
+  ) {}
 
   async executeSeed(): Promise<Result[]> {
+    await this.pokemonModel.deleteMany({}); // delete * from pokemons;
     // 1. FETCH request:
-    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=15");
+    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10');
     if (!response.ok) {
       throw new Error(`Error en la petición: ${response.status}`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data: PokeResponse = await response.json();
 
     // 2. Map data:
-    const pokemonToInsert = data.results.map(({ name, url }) => {
+    const inserts = data.results.map(({ name, url }) => {
       const segments = url.split('/');
       const no: number = +segments[segments.length - 2];
 
-      return { name, no };
+      // return promises to create()
+      return this.pokemonModel.create({ name, no });
     });
 
-    // 3. Insert into DB:
-    await this.pokemonModel.insertMany(pokemonToInsert);
+    // 3. Wait for ALL insertions to finish concurrently
+    await Promise.all(inserts);
 
     return data.results;
   }
