@@ -1868,13 +1868,121 @@ docker run -dp 27017:27017 mongo
 ```
 
 
+## 📚  Lecture 096: Create a Custom provider
+
+### 1. Create:
+```
+03-pokedex/
+├── dist/
+├── mongo/        
+...                 
+├── src/                     
+│   ├── common/                                      
+│   │   ├── adapters/                       # 👈🏽 ✅ 
+|   |   │   └── axios.adapter-ts
+│   │   ├── interfaces/                     # 👈🏽 ✅
+|   |   │   └── http-adapter.interface.ts
+|   │   └── pipes/
+│   ├── pokemon/                                      
+│   ├── seed/                                      
+|   │   ├── dto/                      
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+...
+└── test/ 
+```
+
+### 2. Create **`http-adapter.interace.ts`**:
+```ts
+/* src/common/interfaces/http-adapter.interface.ts */
+export interface HttpAdapter {
+  get<T>(url: string): Promise<T>;
+}
+```
+
+### 3. Create **`axios.adapter.ts`**:
+```ts
+/* src/common/adapters/axios.adapter.ts */
+import axios, { AxiosInstance } from 'axios';
+import { HttpAdapter } from '../interfaces/http-adapter.interface';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AxiosAdapter implements HttpAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  private axios: AxiosInstance = axios;
+
+  async get<T>(url: string): Promise<T> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const { data } = await this.axios.get<T>(url);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return data;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      throw new Error(`This is an error - Check logs`);
+    }
+  }
+}
+```
+
+### 4. Update **`common.module.ts`**
+```ts
+/* src/common/common.module.ts */
+import { Module } from '@nestjs/common';
+import { AxiosAdapter } from './adapters/axios.adapter';  // 👈🏽 ✅
+
+@Module({
+  providers: [AxiosAdapter],  // 👈🏽 ✅
+  exports: [AxiosAdapter],  // 👈🏽 ✅
+})
+export class CommonModule {}
+```
 
 
-
-## 📚  Lecture 0    
+### 5. Update **`seed.module.ts`**:
 ```ts
 /*  */
+import { Module } from '@nestjs/common';
+import { SeedService } from './seed.service';
+import { SeedController } from './seed.controller';
+import { PokemonModule } from 'src/pokemon/pokemon.module';
+import { CommonModule } from 'src/common/common.module';  // 👈🏽 ✅
+@Module({
+  controllers: [SeedController],
+  providers: [SeedService],
+  imports: [PokemonModule, CommonModule],  // 👈🏽 ✅
+})
+export class SeedModule {}
+```
 
+### 6. Update **`seed.service.ts`** in axios format:
+```tsx
+/* src/seed/seed.service.ts */
+//! Axios Format 🔥 🔥
+import {Injectable} from '@nestjs/common'; 
+import axios, { AxiosInsstance } from 'axios'; 
+import { PokeResponse } from './interfaces/poke-response.interface';
+import { AxiosAdapter } from 'src/common/adapters/axios.adapter';
+
+@Injectable() 
+export class SeedService{ 
+  private reaadonly axios: AxiosInstance = axios; 
+  private readonly http: AxiosAdapter;
+
+  async executeSeed() { 
+    const data = await this.http.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=1`); 
+    data.results.forEach( async({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      const pokemon = await this.pokemonModel.create({ name, no });
+    })
+    return data.results; 
+  } 
+}
 ```
 
 ## 📚  Lecture 0    

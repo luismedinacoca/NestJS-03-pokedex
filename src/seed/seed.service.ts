@@ -3,7 +3,7 @@ import { PokeResponse, Result } from './interfaces/poke-response.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Pokemon } from 'src/pokemon/entities/pokemon.entity';
 import { Model } from 'mongoose';
-
+import { AxiosAdapter } from 'src/common/adapters/axios.adapter';
 @Injectable()
 export class SeedService {
   constructor(
@@ -42,12 +42,15 @@ export class SeedService {
 import {Injectable} from '@nestjs/common'; 
 import axios, { AxiosInsstance } from 'axios'; 
 import { PokeResponse } from './interfaces/poke-response.interface';
+import { AxiosAdapter } from 'src/common/adapters/axios.adapter';
 
 @Injectable() 
 export class SeedService{ 
   private reaadonly axios: AxiosInstance = axios; 
+  private readonly http: AxiosAdapter;
+
   async executeSeed() { 
-    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=1`); 
+    const data = await this.http.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=1`); 
     data.results.forEach( async({ name, url }) => {
       const segments = url.split('/');
       const no: number = +segments[segments.length - 2];
