@@ -1985,13 +1985,275 @@ export class SeedService{
 }
 ```
 
-## 📚  Lecture 0    
-```ts
-/*  */
+## 📚  Lecture 097: Pokemons pagination
 
+### 1. Update **`PokemonService`**:
+```ts
+/* src/pokemon/pokemon.service.ts */
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { isValidObjectId, Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+  async create(createPokemonDto: CreatePokemonDto) {...}
+
+  findAll() {
+    //pagination and other requests
+    return this.pokemonModel.find();  // 👈🏽 ✅
+  }
+
+  async findOne(term: string) {...}
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {...}
+  async remove(id: string) {...}
+  private handleExceptions(error: any) {...}
+}
 ```
 
+#### Test in POSTMAN:
+- Method: **`GET`**
+- URL: `http://localhost:3000/api/v2/pokemon`
+- Status Code: `200 OK`
+- Expected Result:
+    ```json
+    [
+      {
+        "_id": "69260e822c00cd1a786843f2",
+        "name": "bulbasaur",
+        "no": 1,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f5",
+        "name": "charmander",
+        "no": 4,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f3",
+        "name": "ivysaur",
+        "no": 2,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f4",
+        "name": "venusaur",
+        "no": 3,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f8",
+        "name": "squirtle",
+        "no": 7,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f9",
+        "name": "wartortle",
+        "no": 8,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843fa",
+        "name": "blastoise",
+        "no": 9,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843fb",
+        "name": "caterpie",
+        "no": 10,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f6",
+        "name": "charmeleon",
+        "no": 5,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f7",
+        "name": "charizard",
+        "no": 6,
+        "__v": 0
+      }
+    ]
+    ```
+
+### 2. Add `@Query() querryParams` for `ffindAll` in **`PokemonController`**:
+```ts
+/* src/pokemon/pokemon.controller.ts */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+
+  @Get()
+  findAll(@Query() queryParams) {  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    console.log({ queryParams }); // 👈🏽 ✅
+    return this.pokemonService.findAll();
+  }
+
+}  
+```
+
+#### Test in POSTMAN:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=3&offset=5`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=3&offset=5`
+
+<img src="../img/section08-lecture097-001.png">
+
+### 3. Create **`pagination.dto.ts`** file:
+```
+03-pokedex/
+├── dist/
+├── mongo/        
+...                 
+├── src/                     
+│   ├── common/                                      
+│   │   ├── adapters/                       
+|   |   │   └── axios.adapter-ts
+│   │   ├── dto/                       # 👈🏽 ✅ 
+|   |   │   └── pagination.dto.ts      # 👈🏽 ✅ 
+│   │   ├── interfaces/                     
+|   |   │   └── http-adapter.interface.ts
+|   │   └── pipes/
+│   ├── pokemon/                                      
+│   ├── seed/                                      
+|   │   ├── dto/                      
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+...
+└── test/ 
+```
+
+#### `pagination.dto.ts` content:
+```ts
+/* src/common/dto/pagination.dto.ts */
+import { IsOptional, IsPositive, Min } from 'class-validator';
+export class PaginationDto {
+  @IsOptional()
+  @IsPositive()
+  @Min(1)
+  limit: number;
+
+  @IsOptional()
+  @IsPositive()
+  offset: number;
+}
+```
+
+
+### 4. Update **`pokemon.controller.ts`**
+```ts
+/* src/pokemon/pokemon.controller.ts */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+
+  @Get()
+  findAll(@Query() paginationDto: PaginationDto) {  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    console.log({ paginationDto }); // 👈🏽 ✅
+    return this.pokemonService.findAll();
+  }
+
+}
+```
+
+#### Testing from POSTMAN:
+
+Test 01:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=-3&offset=-5`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=-3&offset=-5`
+<img src="../img/section08-lecture097-002.png">
+
+Test 02:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=3&foo=bar`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=3&foo=bar`
+<img src="../img/section08-lecture097-003.png">
+
+Test 03:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=3&offset=5`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=3&offset=5`
+<img src="../img/section08-lecture097-004.png">
+> 🔥 Issue: the `query params` are `string`  🤔
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+🔥 🔥 🔥 
+---
+
 ## 📚  Lecture 0    
+
+### 1. 
 ```ts
 /*  */
 

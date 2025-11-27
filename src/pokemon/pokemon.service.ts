@@ -29,7 +29,7 @@ export class PokemonService {
 
   findAll() {
     //pagination and other requests
-    return `This action returns all pokemon`;
+    return this.pokemonModel.find();
   }
 
   async findOne(term: string) {
