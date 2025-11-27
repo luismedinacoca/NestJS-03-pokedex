@@ -29,8 +29,7 @@ export class PokemonController {
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    console.log({ paginationDto });
-    return this.pokemonService.findAll();
+    return this.pokemonService.findAll(paginationDto);
   }
 
   @Get(':id')

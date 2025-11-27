@@ -2237,12 +2237,197 @@ Test 03:
 
 
 
+## 📚  Lecture 098: Transform DTOs    
+
+### 1. Open `src/main.ts` and add `transform` & `transformOptions`:
+```ts
+/* src/main.ts */
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+
+async function main() {
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v2');
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,  // 👈🏽 ✅
+      transformOptions: {  // 👈🏽 ✅
+        enableImplicitConversion: true,  // 👈🏽 ✅
+      },
+    }),
+  );
+  await app.listen(process.env.PORT ?? 3000);
+}
+main();
+```
+
+### 2. Testing in POSTMAN
+####  Complete URL: `http://localhost:3000/api/v2/pokemon?limit=10&offset2=5`
+<img src="../img/section08-lecture098-001.png">
+
+####  Complete URL: `http://localhost:3000/api/v2/pokemon?limit=10&offset=5`
+<img src="../img/section08-lecture098-002.png">
 
 
+### 3. Update `pokemon.controller`:
+```ts
+/* src/pokemon/pokemon.controller.ts */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  create(@Body() createPokemonDto: CreatePokemonDto) {
+    return this.pokemonService.create(createPokemonDto);
+  }
+
+  @Get()
+  findAll(@Query() paginationDto: PaginationDto) {  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    return this.pokemonService.findAll(paginationDto);  // 👈🏽 ✅
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.pokemonService.findOne(id);
+  }
+  @Patch(':term')
+  update(
+    @Param('term') term: string,
+    @Body() updatePokemonDto: UpdatePokemonDto,
+  ) {
+    return this.pokemonService.update(term, updatePokemonDto);
+  }
+  @Delete(':id')
+  remove(@Param('id', ParseMongoIdPipe) id: string) {
+    return this.pokemonService.remove(id);
+  }
+}
+```
 
 
+### 4. Update `pokemon.service`:
+```ts
+/* src/pokemon/pokemon.service.ts */
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { isValidObjectId, Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+  async create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
+    try {
+      const pokemon = await this.pokemonModel.create(createPokemonDto);
+      return pokemon;
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  findAll(paginationDto: PaginationDto) {  // 👈🏽 ✅
+    const { limit = 10, offset = 0 } = paginationDto;  // 👈🏽 ✅
+    return this.pokemonModel
+      .find()
+      .limit(limit)  // 👈🏽 ✅
+      .skip(offset)  // 👈🏽 ✅
+      .sort({ no: 1 }) // sorted in ascending order || descending order { no: -1 } 👈🏽 ✅
+      .select('-__v'); //avoid "__v" 👈🏽 ✅
+  }
+
+  async findOne(term: string) {
+    let pokemon: Pokemon | null | undefined;
+    // search by "no"
+    if (!isNaN(+term)) {
+      pokemon = await this.pokemonModel.findOne({ no: term });
+    }
+    // search by MongoID:
+    if (!pokemon && isValidObjectId(term)) {
+      pokemon = await this.pokemonModel.findById(term);
+    }
+    // search by name:
+    if (!pokemon) {
+      pokemon = await this.pokemonModel.findOne({
+        name: term.toLowerCase().trim(),
+      });
+    }
+    if (!pokemon)
+      throw new NotFoundException(
+        `Pokemon with id, name or no "${term}" not found`,
+      );
+    return pokemon;
+  }
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+    const pokemon = await this.findOne(term);
+    if (updatePokemonDto.name)
+      updatePokemonDto.name = updatePokemonDto.name.toLowerCase().trim();
+    try {
+      await pokemon.updateOne(updatePokemonDto);
+      return { ...pokemon.toJSON(), ...updatePokemonDto };
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
+  async remove(id: string) {
+    const { deletedCount } = await this.pokemonModel.deleteOne({ _id: id });
+    if (deletedCount === 0) {
+      throw new BadRequestException(`Pokemon with "_id: ${id}" not found`);
+    }
+    return {
+      message: `Pokemon with "_id: ${id}" deleted successfully`,
+      deleted: true,
+    };
+  }
+  private handleExceptions(error: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (error.code === 11000) {
+      throw new BadRequestException(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        `Pokemon exists in db ${JSON.stringify(error.keyValue)}`,
+      );
+    }
+    console.log('❌ Error: ', error);
+    throw new InternalServerErrorException(
+      `Can't process Pokemon operation - Check server logs`,
+    );
+  }
+}
+```
 
 
 
@@ -2251,7 +2436,7 @@ Test 03:
 🔥 🔥 🔥 
 ---
 
-## 📚  Lecture 0    
+## 📚  Lecture 0
 
 ### 1. 
 ```ts
