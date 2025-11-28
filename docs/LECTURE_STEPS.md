@@ -278,14 +278,14 @@ docker-compose up -d
 │   └── index.html                  
 ├── src/                     
 │   ├── pokemon/                                      
-|   │   ├── dto/                              
-|   |   │   ├── create-pokemon.dto.ts               
-|   |   │   └── update-pokemon.dto.ts 
-|   │   ├── entities/                         
-|   |   │   └── pokemon.entity.ts 
-|   │   ├── pokemon.module.ts                 
-|   │   ├── pokemon.controller.ts             
-|   │   └── pokemon.service.ts                
+│   │   ├── dto/                              
+│   │   │   ├── create-pokemon.dto.ts               
+│   │   │   └── update-pokemon.dto.ts 
+│   │   ├── entities/                         
+│   │   │   └── pokemon.entity.ts 
+│   │   ├── pokemon.module.ts                 
+│   │   ├── pokemon.controller.ts             
+│   │   └── pokemon.service.ts                
 │   ├── app.module.ts
 │   └── main.ts 
 ├── test/                     
@@ -304,17 +304,17 @@ docker-compose up -d
 
 #### 1.2. Verify docker-desktop:
 
-<img src="./img/section07-lecture072-001.png">
+<img src="../img/section07-lecture072-001.png">
 
 ### 2. Connect MongoDB with **`TablePlus`**:
 Click on **`Create connection`**
-<img src="./img/section07-lecture072-002.png">
+<img src="../img/section07-lecture072-002.png">
 
 Chose **`Mongo`** then click on **`Create`** button.
-<img src="./img/section07-lecture072-003.png">
+<img src="../img/section07-lecture072-003.png">
 
 Enter in URL:  **`mongodb://localhost:27017/nest-pokemon`** then click on **`Test`** button.
-<img src="./img/section07-lecture072-004.png">
+<img src="../img/section07-lecture072-004.png">
 ```yaml
 version: '3'
 services:
@@ -360,7 +360,7 @@ import { MongooseModule } from '@nestjs/mongoose';  // 👈🏽 ✅
 })
 export class AppModule {}
 ```
-<img src="./img/section07-lecture074-001.png">
+<img src="../img/section07-lecture074-001.png">
 
 In case the database container from Docker desktop is down o close, run again:
 ```bash
@@ -414,7 +414,7 @@ export class PokemonModule {}
 ```
 
 Go to TablePlus then update with `CMD/CTRL + R`
-<img src="./img/section07-lecture075-001.png">
+<img src="../img/section07-lecture075-001.png">
 
 
 ## 📚  Lecture 076. POST - Receive and validate data
@@ -1293,7 +1293,7 @@ export class PokemonController {
   ```text
   This action removes a #bulbasaur pokemon
   ```
-<img src="./img/section07-lecture083-001.png">
+<img src="../img/section07-lecture083-001.png">
 
 
 ### 9. ADd some validation:
@@ -1318,13 +1318,13 @@ export class ParseMongoIdPipe implements PipeTransform {
 ```
 
 Make a request by `name`:
-<img src="./img/section07-lecture083-002.png">
+<img src="../img/section07-lecture083-002.png">
 
 Make a request by `no`:
-<img src="./img/section07-lecture083-003.png">
+<img src="../img/section07-lecture083-003.png">
 
 Make a request by `_id_`:
-<img src="./img/section07-lecture083-004.png">
+<img src="../img/section07-lecture083-004.png">
 
 
 ### 10. Update **`pokemon.service.ts`**:
@@ -1339,9 +1339,9 @@ Make a request by `_id_`:
 
 Issues:
 - delete as espected.
-<img src="./img/section07-lecture083-005.png">
+<img src="../img/section07-lecture083-005.png">
 - second time you make a delete request with the same `_id` and it returns `200`. 💥
-<img src="../img/section07-lecture083-006.png">
+<img src=".../img/section07-lecture083-006.png">
 
 
 ## 📚  Lecture 084: Validate and delete in one single request
@@ -1358,7 +1358,7 @@ Issues:
 ```
 
 Outcome:
-<img src="./img/section07-lecture084-001.png">
+<img src="../img/section07-lecture084-001.png">
 
 ### 2. Destructuring the **`deleteOne`** result:
 ```ts
@@ -1376,14 +1376,1071 @@ Outcome:
 ```
 
 1. Update the database:
-<img src="./img/section07-lecture084-002.png">
+<img src="../img/section07-lecture084-002.png">
 
 2. Delete the first pokemon:
-<img src="./img/section07-lecture084-003.png">
+<img src="../img/section07-lecture084-003.png">
 
 3. Try again:
-<img src="./img/section07-lecture084-004.png">
+<img src="../img/section07-lecture084-004.png">
 
-## 📚  Lecture 0    
-## 📚  Lecture 0    
-## 📚  Lecture 0    
+
+# 👨🏾‍💻 Section 08: Seed & Pagination
+
+## 📚  Lecture 090: Create a SEED module
+
+### 1. Execute the following command:
+```ts
+nest g res seed --no-spec
+---
+✔ What transport layer do you use? REST API
+✔ Would you like to generate CRUD entry points? Yes
+---
+CREATE src/seed/seed.controller.ts (883 bytes)
+CREATE src/seed/seed.module.ts (241 bytes)
+CREATE src/seed/seed.service.ts (607 bytes)
+CREATE src/seed/dto/create-seed.dto.ts (30 bytes)
+CREATE src/seed/dto/update-seed.dto.ts (169 bytes)
+CREATE src/seed/entities/seed.entity.ts (21 bytes)
+UPDATE src/app.module.ts (647 bytes)
+```
+
+### 2. Delete folder & File no needed (❌):
+```
+03-pokedex/
+├── dist/
+├── mongo/        
+...                 
+├── src/                     
+│   ├── pokemon/                                      
+│   ├── seed/                                      
+|   │   ├── dto/                      ❌                            
+|   |   │   ├── create-seed.dto.ts    ❌           
+|   |   │   └── update-seed.dto.ts    ❌
+|   │   ├── entities/                 ❌        
+|   |   │   └── seed.entity.ts        ❌
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+```
+
+### 3. Update or modify **`seed.service.ts`** file:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class SeedService {
+  executeSeed() {
+    return 'This action will execute the seed';
+  }
+}
+```
+
+### 4. Update or modify **`seed.controller.ts`** file:
+```ts
+/* src/seed/seed.controller.ts */
+import { Controller, Get } from '@nestjs/common';
+import { SeedService } from './seed.service';
+
+@Controller('seed')
+export class SeedController {
+  constructor(private readonly seedService: SeedService) {}
+
+  @Get()
+  findAll() {
+    return this.seedService.executeSeed();
+  }
+}
+```
+
+#### Test from Postman:
+- method: **`GET`**
+- URL: http://localhost:3000/api/v2/seed
+- response: 
+  ```text
+  This action will execute the seed
+  ```
+
+
+## 📚  Lecture 092: Make a HTTP request from Nest
+
+### Goals:
+1. Go to https://pokeapi.co/
+2. Request for https://pokeapi.co/api/v2/pokemon?limit=650
+3. Use those data in order to populate the database in pokemon.service.create()
+
+
+### 2. Go to **`seed.service.ts`** file:
+Mandatory having node version v18+
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+
+@Injectable()
+export class SeedService {
+  async executeSeed() {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.results;  // No data type response! 💥 😪
+  }
+}
+```
+
+### 3. Create an interface in order to validate dta type response:
+```ts
+/* src/seed/interfaces/poke-response.interface.ts */
+export interface PokeResponse {
+  count:    number;
+  next:     string;
+  previous: null;
+  results:  Result[];
+}
+
+export interface Result {
+  name: string;
+  url:  string;
+}
+```
+
+### 4. Update the **`seed.service.tss`** with the interface:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+
+@Injectable()
+export class SeedService {
+  async executeSeed(): Promise<Result[]> {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=650");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+    return data.results; // It suggest "results" with some specific data type.
+  }
+}
+```
+
+### 5. Get the **`no`** from **`url`**:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+
+@Injectable()
+export class SeedService {
+  async executeSeed(): Promise<Result[]> {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+    
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+      //console.log(segments); // [ 'https:', '', 'pokeapi.co', 'api', 'v2', 'pokemon', '1', '' ]
+
+      const no: number = +segments[ segments.length - 2]; // str -> number
+      console.log({name, no}); //{ name: 'bulbasaur', no: 1 }
+    });
+    return data.results;
+  }
+}
+```
+
+## 📚  Lecture 094: Solution – Insert Pokemon in batches
+
+### 1. Make an injection from **`pokemon.service.ts`** to **`seed.service.ts`**:
+From:
+```ts
+/* src/pokemon/pokemon.service.ts */
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)  // 👈🏽 ✅
+    private readonly pokemonModel: Model<Pokemon>,  // 👈🏽 ✅
+  ) {}
+  ...
+}
+```
+
+To:
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+import { InjectModel } from '@nestjs/mongoose';  // 👈🏽 ✅
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';  // 👈🏽 ✅
+import { Model } from 'mongoose';  // 👈🏽 ✅
+
+@Injectable()
+export class SeedService {
+
+  constructor(
+    @InjectModel(Pokemon.name)  // 👈🏽 ✅
+    private readonly pokemonModel: Model<Pokemon>,  // 👈🏽 ✅
+  ) { }
+
+  async executeSeed(): Promise<Result[]> {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=10");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+
+      const no: number = +segments[segments.length - 2]; 
+      console.log({ name, no }); 
+    });
+    return data.results;
+  }
+}
+```
+
+Outcome:
+```bash
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [InstanceLoader] AppModule dependencies initialized +17ms
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [InstanceLoader] MongooseModule dependencies initialized +0ms
+[Nest] 26603  - 11/20/2025, 3:12:01 PM     LOG [InstanceLoader] CommonModule dependencies initialized +0ms
+[Nest] 26603  - 11/20/2025, 3:12:01 PM   ERROR [ExceptionHandler] UnknownDependenciesException [Error]: Nest can't resolve dependencies of the SeedService (?). Please make sure that the argument "PokemonModel" at index [0] is available in the SeedModule context.
+
+Potential solutions:
+- Is SeedModule a valid NestJS module?
+- If "PokemonModel" is a provider, is it part of the current SeedModule?
+- If "PokemonModel" is exported from a separate @Module, is that module imported within SeedModule?
+```
+
+### 2. Fixing the previous issue:
+Go to **`pokemon.module`** file then export **`MongooseModule`**:
+```ts
+/* src/pokemon/pokemon.module.ts */
+import { Module } from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { PokemonController } from './pokemon.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Pokemon, PokemonSchema } from './entities/pokemon.entity';
+
+@Module({
+  controllers: [PokemonController],
+  providers: [PokemonService],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: Pokemon.name,
+        schema: PokemonSchema,
+      },
+    ]),
+  ],
+  exports: [
+    MongooseModule,  // 👈🏽 ✅
+  ]
+})
+export class PokemonModule { }
+```
+
+Open **`seed.module.ts`** file then import **`PokemonModule`**
+```ts
+/* src/seed/seed.module.ts */
+import { Module } from '@nestjs/common';
+import { SeedService } from './seed.service';
+import { SeedController } from './seed.controller';
+import { PokemonModule } from 'src/pokemon/pokemon.module';  // 👈🏽 ✅
+
+@Module({
+  controllers: [SeedController],
+  providers: [SeedService],
+  imports: [PokemonModule],  // 👈🏽 ✅
+})
+export class SeedModule {}
+```
+
+> Note:
+
+### 📦 Module Explanation
+
+#### 1. In `pokemon.module.ts` 📁, the `MongooseModule` 🍃 is exported.
+
+**Why?** To make the model configuration (in this case, the `Pokemon` model defined in `forFeature`) accessible from other external modules.
+
+#### 2. In `seed.module.ts` 📂, the `PokemonModule` is imported.
+
+**What for?** This allows `seed.service.ts` 🛠️ to inject the model:
+
+```typescript
+@InjectModel(Pokemon.name)
+private readonly pokemonModel: Model<Pokemon>
+```
+
+---
+
+Outcome from terminal:
+```bash
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] AppModule dependencies initialized +17ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] MongooseModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] CommonModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] ServeStaticModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] MongooseCoreModule dependencies initialized +14ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] MongooseModule dependencies initialized +0ms
+# [Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] SeedModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [InstanceLoader] PokemonModule dependencies initialized +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RoutesResolver] PokemonController {/api/v2/pokemon}: +2ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon, POST} route +1ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon, GET} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon/:id, GET} route +1ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon/:term, PATCH} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/pokemon/:id, DELETE} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RoutesResolver] SeedController {/api/v2/seed}: +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [RouterExplorer] Mapped {/api/v2/seed, GET} route +0ms
+[Nest] 35100  - 11/20/2025, 3:22:11 PM     LOG [NestApplication] Nest application successfully started +2ms
+```
+
+### 3. Let's populate the database:
+
+#### 1. **`Fetch`** version
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';
+import { Model } from 'mongoose';
+@Injectable()
+export class SeedService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) { }
+  async executeSeed(): Promise<Result[]> {
+    // 1. FETCH request:
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=15");
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+    const data: PokeResponse = await response.json();
+    // 2. Map data:  👈🏽 ✅
+    const pokemonToInsert = data.results.map(({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      return { name, no };
+    });
+    // 3. Insert into DB:  👈🏽 ✅
+    await this.pokemonModel.insertMany(pokemonToInsert);
+    return data.results;
+  }
+}
+```
+
+#### 2. **`Axios`** version:
+```ts
+/* src/seed/seed.service.ts */
+import {Injectable} from '@nestjs/common'; 
+import axios, { AxiosInsstance } from 'axios'; 
+import { PokeResponse } from './interfaces/poke-response.interface';
+
+@Injectable() 
+export class SeedService{ 
+  private reaadonly axios: AxiosInstance = axios; 
+  async executeSeed() { 
+    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=1`); 
+    data.results.forEach( async({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      const pokemon = await this.pokemonModel.create({ name, no });  // 👈🏽 ✅
+    })
+    return data.results; 
+  } 
+}
+```
+
+Outcome:
+
+<img src="../img/section08-lecture094-001.png">
+
+
+## 📚  Lecture 095: Insert multiple records simultaneously
+
+Read the following files:
+- docs/section08-lecture095-seed_comparison.md
+- docs/section08-lecture095-no-wait-in-map.md
+
+```ts
+/* src/seed/seed.service.ts */
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { PokeResponse, Result } from './interfaces/poke-response.interface';
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';
+
+@Injectable()
+export class SeedService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+
+  async executeSeed(): Promise<Result[]> {
+    // 1. Fetch request
+    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10');
+    if (!response.ok) {
+      throw new Error(`Request error: ${response.status}`);
+    }
+
+    const data: PokeResponse = await response.json();
+
+    // 2. Build batch data
+    const pokemonToInsert = data.results.map(({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      return { name, no };
+    });
+
+    // 3. Batch insert for maximum efficiency
+    await this.pokemonModel.insertMany(pokemonToInsert);
+
+    return data.results;
+  }
+}
+```
+
+### Run **`seed`** from POSTMAN:
+1. Method: **`GET`**
+2. URL: **`http://localhost:3000/api/v2/seed`**
+3. Expected Result:
+    ```json
+    [
+        {
+            "name": "bulbasaur",
+            "url": "https://pokeapi.co/api/v2/pokemon/1/"
+        },
+        {
+            "name": "ivysaur",
+            "url": "https://pokeapi.co/api/v2/pokemon/2/"
+        },
+        {
+            "name": "venusaur",
+            "url": "https://pokeapi.co/api/v2/pokemon/3/"
+        },
+        {
+            "name": "charmander",
+            "url": "https://pokeapi.co/api/v2/pokemon/4/"
+        },
+        {
+            "name": "charmeleon",
+            "url": "https://pokeapi.co/api/v2/pokemon/5/"
+        },
+        {
+            "name": "charizard",
+            "url": "https://pokeapi.co/api/v2/pokemon/6/"
+        },
+        {
+            "name": "squirtle",
+            "url": "https://pokeapi.co/api/v2/pokemon/7/"
+        },
+        {
+            "name": "wartortle",
+            "url": "https://pokeapi.co/api/v2/pokemon/8/"
+        },
+        {
+            "name": "blastoise",
+            "url": "https://pokeapi.co/api/v2/pokemon/9/"
+        },
+        {
+            "name": "caterpie",
+            "url": "https://pokeapi.co/api/v2/pokemon/10/"
+        }
+    ]
+    ```
+
+### 🔥 Run from terminal:
+```bash
+docker run -dp 27017:27017 mongo
+```
+
+
+## 📚  Lecture 096: Create a Custom provider
+
+### 1. Create:
+```
+03-pokedex/
+├── dist/
+├── mongo/        
+...                 
+├── src/                     
+│   ├── common/                                      
+│   │   ├── adapters/                       # 👈🏽 ✅ 
+|   |   │   └── axios.adapter-ts
+│   │   ├── interfaces/                     # 👈🏽 ✅
+|   |   │   └── http-adapter.interface.ts
+|   │   └── pipes/
+│   ├── pokemon/                                      
+│   ├── seed/                                      
+|   │   ├── dto/                      
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+...
+└── test/ 
+```
+
+### 2. Create **`http-adapter.interace.ts`**:
+```ts
+/* src/common/interfaces/http-adapter.interface.ts */
+export interface HttpAdapter {
+  get<T>(url: string): Promise<T>;
+}
+```
+
+### 3. Create **`axios.adapter.ts`**:
+```ts
+/* src/common/adapters/axios.adapter.ts */
+import axios, { AxiosInstance } from 'axios';
+import { HttpAdapter } from '../interfaces/http-adapter.interface';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AxiosAdapter implements HttpAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  private axios: AxiosInstance = axios;
+
+  async get<T>(url: string): Promise<T> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const { data } = await this.axios.get<T>(url);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return data;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      throw new Error(`This is an error - Check logs`);
+    }
+  }
+}
+```
+
+### 4. Update **`common.module.ts`**
+```ts
+/* src/common/common.module.ts */
+import { Module } from '@nestjs/common';
+import { AxiosAdapter } from './adapters/axios.adapter';  // 👈🏽 ✅
+
+@Module({
+  providers: [AxiosAdapter],  // 👈🏽 ✅
+  exports: [AxiosAdapter],  // 👈🏽 ✅
+})
+export class CommonModule {}
+```
+
+
+### 5. Update **`seed.module.ts`**:
+```ts
+/*  */
+import { Module } from '@nestjs/common';
+import { SeedService } from './seed.service';
+import { SeedController } from './seed.controller';
+import { PokemonModule } from 'src/pokemon/pokemon.module';
+import { CommonModule } from 'src/common/common.module';  // 👈🏽 ✅
+@Module({
+  controllers: [SeedController],
+  providers: [SeedService],
+  imports: [PokemonModule, CommonModule],  // 👈🏽 ✅
+})
+export class SeedModule {}
+```
+
+### 6. Update **`seed.service.ts`** in axios format:
+```tsx
+/* src/seed/seed.service.ts */
+//! Axios Format 🔥 🔥
+import {Injectable} from '@nestjs/common'; 
+import axios, { AxiosInsstance } from 'axios'; 
+import { PokeResponse } from './interfaces/poke-response.interface';
+import { AxiosAdapter } from 'src/common/adapters/axios.adapter';
+
+@Injectable() 
+export class SeedService{ 
+  private reaadonly axios: AxiosInstance = axios; 
+  private readonly http: AxiosAdapter;
+
+  async executeSeed() { 
+    const data = await this.http.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=1`); 
+    data.results.forEach( async({ name, url }) => {
+      const segments = url.split('/');
+      const no: number = +segments[segments.length - 2];
+      const pokemon = await this.pokemonModel.create({ name, no });
+    })
+    return data.results; 
+  } 
+}
+```
+
+## 📚  Lecture 097: Pokemons pagination
+
+### 1. Update **`PokemonService`**:
+```ts
+/* src/pokemon/pokemon.service.ts */
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { isValidObjectId, Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+  async create(createPokemonDto: CreatePokemonDto) {...}
+
+  findAll() {
+    //pagination and other requests
+    return this.pokemonModel.find();  // 👈🏽 ✅
+  }
+
+  async findOne(term: string) {...}
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {...}
+  async remove(id: string) {...}
+  private handleExceptions(error: any) {...}
+}
+```
+
+#### Test in POSTMAN:
+- Method: **`GET`**
+- URL: `http://localhost:3000/api/v2/pokemon`
+- Status Code: `200 OK`
+- Expected Result:
+    ```json
+    [
+      {
+        "_id": "69260e822c00cd1a786843f2",
+        "name": "bulbasaur",
+        "no": 1,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f5",
+        "name": "charmander",
+        "no": 4,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f3",
+        "name": "ivysaur",
+        "no": 2,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f4",
+        "name": "venusaur",
+        "no": 3,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f8",
+        "name": "squirtle",
+        "no": 7,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f9",
+        "name": "wartortle",
+        "no": 8,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843fa",
+        "name": "blastoise",
+        "no": 9,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843fb",
+        "name": "caterpie",
+        "no": 10,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f6",
+        "name": "charmeleon",
+        "no": 5,
+        "__v": 0
+      },
+      {
+        "_id": "69260e822c00cd1a786843f7",
+        "name": "charizard",
+        "no": 6,
+        "__v": 0
+      }
+    ]
+    ```
+
+### 2. Add `@Query() querryParams` for `ffindAll` in **`PokemonController`**:
+```ts
+/* src/pokemon/pokemon.controller.ts */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+
+  @Get()
+  findAll(@Query() queryParams) {  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    console.log({ queryParams }); // 👈🏽 ✅
+    return this.pokemonService.findAll();
+  }
+
+}  
+```
+
+#### Test in POSTMAN:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=3&offset=5`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=3&offset=5`
+
+<img src="../img/section08-lecture097-001.png">
+
+### 3. Create **`pagination.dto.ts`** file:
+```
+03-pokedex/
+├── dist/
+├── mongo/        
+...                 
+├── src/                     
+│   ├── common/                                      
+│   │   ├── adapters/                       
+|   |   │   └── axios.adapter-ts
+│   │   ├── dto/                       # 👈🏽 ✅ 
+|   |   │   └── pagination.dto.ts      # 👈🏽 ✅ 
+│   │   ├── interfaces/                     
+|   |   │   └── http-adapter.interface.ts
+|   │   └── pipes/
+│   ├── pokemon/                                      
+│   ├── seed/                                      
+|   │   ├── dto/                      
+|   │   ├── pokemon.module.ts                 
+|   │   ├── pokemon.controller.ts             
+|   │   └── pokemon.service.ts                
+│   ├── app.module.ts
+│   └── main.ts 
+...
+└── test/ 
+```
+
+#### `pagination.dto.ts` content:
+```ts
+/* src/common/dto/pagination.dto.ts */
+import { IsOptional, IsPositive, Min } from 'class-validator';
+export class PaginationDto {
+  @IsOptional()
+  @IsPositive()
+  @Min(1)
+  limit: number;
+
+  @IsOptional()
+  @IsPositive()
+  offset: number;
+}
+```
+
+
+### 4. Update **`pokemon.controller.ts`**
+```ts
+/* src/pokemon/pokemon.controller.ts */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+
+  @Get()
+  findAll(@Query() paginationDto: PaginationDto) {  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    console.log({ paginationDto }); // 👈🏽 ✅
+    return this.pokemonService.findAll();
+  }
+
+}
+```
+
+#### Testing from POSTMAN:
+
+Test 01:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=-3&offset=-5`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=-3&offset=-5`
+<img src="../img/section08-lecture097-002.png">
+
+Test 02:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=3&foo=bar`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=3&foo=bar`
+<img src="../img/section08-lecture097-003.png">
+
+Test 03:
+- Method: **`GET`**
+- URL: [localhost-URL](http://localhost:3000/api/v2/pokemon)
+- QueryParams: `?limit=3&offset=5`
+- Complete URL: `http://localhost:3000/api/v2/pokemon?limit=3&offset=5`
+<img src="../img/section08-lecture097-004.png">
+> 🔥 Issue: the `query params` are `string`  🤔
+
+
+
+## 📚  Lecture 098: Transform DTOs    
+
+### 1. Open `src/main.ts` and add `transform` & `transformOptions`:
+```ts
+/* src/main.ts */
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+
+async function main() {
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v2');
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,  // 👈🏽 ✅
+      transformOptions: {  // 👈🏽 ✅
+        enableImplicitConversion: true,  // 👈🏽 ✅
+      },
+    }),
+  );
+  await app.listen(process.env.PORT ?? 3000);
+}
+main();
+```
+
+### 2. Testing in POSTMAN
+####  Complete URL: `http://localhost:3000/api/v2/pokemon?limit=10&offset2=5`
+<img src="../img/section08-lecture098-001.png">
+
+####  Complete URL: `http://localhost:3000/api/v2/pokemon?limit=10&offset=5`
+<img src="../img/section08-lecture098-002.png">
+
+
+### 3. Update `pokemon.controller`:
+```ts
+/* src/pokemon/pokemon.controller.ts */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { ParseMongoIdPipe } from 'src/common/pipes/parse-mongo-id.pipe';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+@Controller('pokemon')
+export class PokemonController {
+  constructor(private readonly pokemonService: PokemonService) {}
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  create(@Body() createPokemonDto: CreatePokemonDto) {
+    return this.pokemonService.create(createPokemonDto);
+  }
+
+  @Get()
+  findAll(@Query() paginationDto: PaginationDto) {  // 👈🏽 ✅
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    return this.pokemonService.findAll(paginationDto);  // 👈🏽 ✅
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.pokemonService.findOne(id);
+  }
+  @Patch(':term')
+  update(
+    @Param('term') term: string,
+    @Body() updatePokemonDto: UpdatePokemonDto,
+  ) {
+    return this.pokemonService.update(term, updatePokemonDto);
+  }
+  @Delete(':id')
+  remove(@Param('id', ParseMongoIdPipe) id: string) {
+    return this.pokemonService.remove(id);
+  }
+}
+```
+
+
+### 4. Update `pokemon.service`:
+```ts
+/* src/pokemon/pokemon.service.ts */
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { isValidObjectId, Model } from 'mongoose';
+import { Pokemon } from './entities/pokemon.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+
+@Injectable()
+export class PokemonService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>,
+  ) {}
+  async create(createPokemonDto: CreatePokemonDto) {
+    createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
+    try {
+      const pokemon = await this.pokemonModel.create(createPokemonDto);
+      return pokemon;
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  findAll(paginationDto: PaginationDto) {  // 👈🏽 ✅
+    const { limit = 10, offset = 0 } = paginationDto;  // 👈🏽 ✅
+    return this.pokemonModel
+      .find()
+      .limit(limit)  // 👈🏽 ✅
+      .skip(offset)  // 👈🏽 ✅
+      .sort({ no: 1 }) // sorted in ascending order || descending order { no: -1 } 👈🏽 ✅
+      .select('-__v'); //avoid "__v" 👈🏽 ✅
+  }
+
+  async findOne(term: string) {
+    let pokemon: Pokemon | null | undefined;
+    // search by "no"
+    if (!isNaN(+term)) {
+      pokemon = await this.pokemonModel.findOne({ no: term });
+    }
+    // search by MongoID:
+    if (!pokemon && isValidObjectId(term)) {
+      pokemon = await this.pokemonModel.findById(term);
+    }
+    // search by name:
+    if (!pokemon) {
+      pokemon = await this.pokemonModel.findOne({
+        name: term.toLowerCase().trim(),
+      });
+    }
+    if (!pokemon)
+      throw new NotFoundException(
+        `Pokemon with id, name or no "${term}" not found`,
+      );
+    return pokemon;
+  }
+  async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+    const pokemon = await this.findOne(term);
+    if (updatePokemonDto.name)
+      updatePokemonDto.name = updatePokemonDto.name.toLowerCase().trim();
+    try {
+      await pokemon.updateOne(updatePokemonDto);
+      return { ...pokemon.toJSON(), ...updatePokemonDto };
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
+  async remove(id: string) {
+    const { deletedCount } = await this.pokemonModel.deleteOne({ _id: id });
+    if (deletedCount === 0) {
+      throw new BadRequestException(`Pokemon with "_id: ${id}" not found`);
+    }
+    return {
+      message: `Pokemon with "_id: ${id}" deleted successfully`,
+      deleted: true,
+    };
+  }
+  private handleExceptions(error: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (error.code === 11000) {
+      throw new BadRequestException(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        `Pokemon exists in db ${JSON.stringify(error.keyValue)}`,
+      );
+    }
+    console.log('❌ Error: ', error);
+    throw new InternalServerErrorException(
+      `Can't process Pokemon operation - Check server logs`,
+    );
+  }
+}
+```
+
+
+
+
+---
+🔥 🔥 🔥 
+---
+
+## 📚  Lecture 0
+
+### 1. 
+```ts
+/*  */
+
+```
+
